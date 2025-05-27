@@ -15,6 +15,7 @@ def check_LOC (line, start_index, index):
 # pre : - only called in check_LOC_and_params
 # post: - returns name of function (or returns none)
 def check_parameters (line):
+    #TODO: finish this
     print()
 
 # pre : - only called in read_lines
@@ -40,6 +41,6 @@ def read_lines (contents):
     return long_methods, long_parameters
 
 
+#TODO:
 # duplicated code (use Jaccard Similarity for each method, compare two at a time)
 # refactor dup (whichever method is called more, replace lesser used ones with the more used ones, send to FileLogic)
-
