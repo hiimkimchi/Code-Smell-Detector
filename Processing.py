@@ -2,15 +2,19 @@ import re
 
 MAX_LOC = 15
 
-def get_function_name(line):
-    function_name_pattern = re.compile(r'^\s*def\s+([A-Za-z_]\w*)\s*\(')
-    return function_name_pattern.match(line)
+# pre : - line is a method definition header (e.g. def ...)
+# post: - returns the method name within the line
+def get_method_name(line):
+    if line.startswith("if __name__ == \"__main__\""):
+        return "MAIN"
+    method_name_pattern = re.compile(r'^\s*def\s+([A-Za-z_]\w*)\s*\(')
+    return method_name_pattern.match(line)
 
 # pre : - start_index < index
 #       - line is a function definition start and is non empty 
 # post: - returns name of function (or returns none)
 def check_LOC (line, start_index, index):
-    function_name = get_function_name(line)
+    function_name = get_method_name(line)
     LOC = index - start_index
     if LOC > MAX_LOC:
         return function_name
@@ -19,13 +23,12 @@ def check_LOC (line, start_index, index):
 # pre : - line is a function definition start and is non empty 
 # post: - returns name of function (or returns none)
 def check_parameters (line):
-    function_name = get_function_name(line)
+    function_name = get_method_name(line)
     param_pattern = (r'?:\s*)(\[[^\]]*\]|\([^\)]*\)|[^,\[\]\(\)]+)(?=\s*,|\s*$)', re.VERBOSE)
     params = [p.strip() for p in param_pattern.findall(line)]
     if len(params) >= 3:
         return function_name
     return None
-
 
 # pre : - start_index < index
 #       - line is a function definition start and is non empty 
@@ -55,29 +58,54 @@ def read_lines (contents):
 def is_not_method (contents, index):
     return not contents[index].startswith("def ") or not contents[index].startswith("if __name__ == \"__main__\"") or index < len(contents)
 
+# pre : - method_name is properly retrieved by get_method_name
+# post: - returns True if the name is found, False if not
+def name_in_line (method_name, line):
+    name_pattern = re.compile(rf'\b{re.escape(method_name)}\s*\([^)]*\)')
+    return bool(name_pattern.search(line))
+    
+# pre : - len of method1 and 2 are not 0
+# post: - returns a jaccard similarity score (float theoretically in between 0.0 and 1.0)
 def jaccard_sim (method1, method2):
     lineset1 = {ln.strip() for ln in method1 if ln.strip()}
     lineset2 = {ln.strip() for ln in method2 if ln.strip()}
     intersection = lineset1 & lineset2
     union = lineset1 | lineset2
-    return len(intersection)/len(union) if union else 1.0
+    return len(intersection) / len(union) if union else 1.0
 
-def get_calls (function_name, contents):
-    print()
-    #TODO: gets number of calls of the function name EXCEPT the line where it is defined
+# pre : - method_name is properly retrieved by get_method_name
+# post: - returns number of calls of the method made in the code except the line where it is defined
+def get_calls (method_name, contents):
+    calls = 0
+    for index in range(len(contents)):
+        if is_not_method(contents, index) and name_in_line(method_name, contents[index]):
+            calls += 1
+    return calls
 
+# pre : - len of method1 and 2 are not 0
+# post: - returns a nested hashmap pair {method1 : amount of calls} : {method2 : amount of calls}
 def check_duplicated (method1, method2, contents):
     if jaccard_sim(method1, method2) < 0.75:
         return None
-    method1_name = get_function_name(method1[0])
-    method2_name = get_function_name(method2[0])
+    method1_name = get_method_name(method1[0])
+    method2_name = get_method_name(method2[0])
     method1_count, method2_count = get_calls(method1_name, contents), get_calls(method2_name, contents)
     return { {method1_name : method1_count} : {method2_name : method2_count} }
 
-def read_pairs (contents):
+# pre : 
+# post: 
+def collect_methods (contents):
+    #TODO: put contents into sub lists
+    print()
+
+# pre :
+# post:
+def populate_pairs (methods):
     #TODO: matches pairs and checks if duplicated and adds to a hashmap if so
     print()
 
+# pre :
+# post:
 def refactor_duplicates (pairs, contents):
     #TODO:
     print()
