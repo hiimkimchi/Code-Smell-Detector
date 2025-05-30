@@ -1,4 +1,5 @@
 import re
+from itertools import combinations
 
 MAX_LOC = 15
 
@@ -36,12 +37,12 @@ def check_parameters (line):
 def check_LOC_and_params (contents, start_index, index):
     return check_LOC(contents[start_index], start_index, index), check_parameters(contents[index])
 
-# pre : - contents are correctly read in FileLogic.py
+# pre : - none
 # post: - returns list of methods that are too long and methods that have too many parameters
-def read_lines (contents):
+def find_LOC_and_params (contents):
     current_start_index, long_methods, long_parameters = None, [], []
     for index in range(len(contents)):
-        if is_not_method(contents, index):
+        if not is_method(contents, index):
             continue
         if not current_start_index:
             current_start_index = index
@@ -54,9 +55,9 @@ def read_lines (contents):
     return long_methods, long_parameters
 
 # pre : - index < len(contents)
-# post: - returns True if line is not start of a method, False if line is a start of a method
-def is_not_method (contents, index):
-    return not contents[index].startswith("def ") or not contents[index].startswith("if __name__ == \"__main__\"") or index < len(contents)
+# post: - returns True if line is start of a method, False if line is not a start of a method
+def is_method (contents, index):
+    return contents[index].startswith("def ") and contents[index].startswith("if __name__ == \"__main__\"") and index >= len(contents)
 
 # pre : - method_name is properly retrieved by get_method_name
 # post: - returns True if the name is found, False if not
@@ -78,35 +79,73 @@ def jaccard_sim (method1, method2):
 def get_calls (method_name, contents):
     calls = 0
     for index in range(len(contents)):
-        if is_not_method(contents, index) and name_in_line(method_name, contents[index]):
+        if not is_method(contents, index) and name_in_line(method_name, contents[index]):
             calls += 1
     return calls
 
 # pre : - len of method1 and 2 are not 0
-# post: - returns a nested hashmap pair {method1 : amount of calls} : {method2 : amount of calls}
+# post: - returns a pair formatted as such {(method1, method2) : {method1 : amount of calls, method2 : amount of calls}}
 def check_duplicated (method1, method2, contents):
     if jaccard_sim(method1, method2) < 0.75:
         return None
-    method1_name = get_method_name(method1[0])
-    method2_name = get_method_name(method2[0])
+    method1_name, method2_name = get_method_name(method1[0]), get_method_name(method2[0])
     method1_count, method2_count = get_calls(method1_name, contents), get_calls(method2_name, contents)
-    return { {method1_name : method1_count} : {method2_name : method2_count} }
+    return {(method1_name, method2_name) : {method1_name : method2_count, method2_name : method2_count}}
 
-# pre : 
-# post: 
+# pre : - none
+# post: - returns contents split sublists by method
 def collect_methods (contents):
-    #TODO: put contents into sub lists
-    print()
+    all_methods, current_method = [], []
+    for index in range(len(contents)):
+        if is_method(contents, index):
+            if current_method:
+                all_methods.append(current_method)
+                current_method = [contents[index]]
+            else:
+                if current_method:
+                    current_method.append(contents[index])
+    if current_method:
+        all_methods.append(current_method)
+    return all_methods
 
-# pre :
-# post:
-def populate_pairs (methods):
-    #TODO: matches pairs and checks if duplicated and adds to a hashmap if so
-    print()
+# pre : - none
+# post: - returns pairs formatted as such {(method1, method2) : {method1 : amount of calls, method2 : amount of calls}}
+def find_duplicates (contents):
+    duplicates = {}
+    all_methods = collect_methods(contents)
+    for method1, method2 in combinations((all_methods), 2):
+        pair_dict = check_duplicated(method1, method2, contents)
+        if pair_dict:
+            duplicates.update(pair_dict)
+    return duplicates
 
-# pre :
-# post:
+# pre : - pairs is a hashmap formatted as such {(method1, method2) : {method1 : amount of calls, method2 : amount of calls}}
+# post: - returns new version of contents
 def refactor_duplicates (pairs, contents):
-    #TODO:
-    print()
-    # refactor dup (whichever method is called more, replace lesser used ones with the more used ones, send to FileLogic)
+    #TODO: fill out the rest of the function with corresponding helper functions
+    replace_map = winner_loser_replacement_map(pairs, contents)
+    new_contents = rewrite_contents (replace_map, contents)
+    # for each line, see if we can replace the calls of the lesser # of called fx with the more called fx
+    # for the lesser fx, remove the function definition entirely as well
+
+# pre : - pairs is a hashmap formatted as such {(method1, method2) : {method1 : amount of calls, method2 : amount of calls}}
+# post: - returns hashmap as such {winner : loser}
+def winner_loser_replacement_map (pairs, contents):
+    replace_map = {}
+    for (m1, m2), counts in pairs.items():
+        c1, c2 = counts[m1], counts[m2]
+        if c1 >= c2:
+            winner, loser = m1, m2
+        else:
+            winner, loser = m2, m1
+        replace_map[loser] = winner
+    return replace_map
+
+
+# pre :
+# post:
+def rewrite_contents (replace_map, contents):
+    new_contents, skipping, skip_indent = [], False, 0
+    for line in contents:
+        #TODO:
+        print()
