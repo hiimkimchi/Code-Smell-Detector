@@ -32,6 +32,7 @@ def load_file(status_label):
         return
     try:
         original_contents = get_file(path)
+        print(original_contents)
     except Exception as e:
         messagebox.showerror("Error", f"Could not read file:\n{e}")
         return
@@ -44,13 +45,15 @@ def load_file(status_label):
 def find_codesmells(LOC_label, params_label, duplicates_label):
     global original_contents
     long_methods, long_parameters = find_LOC_and_params(original_contents)
+    print(long_methods)
+    print(long_parameters)
     duplicate_code = find_duplicates(original_contents)
     if long_methods: 
-        LOC_label.config(text="Long Method/Function(s) detected!")
+        LOC_label.config(text="Long Method/Function(s) detected: " + ", ".join(long_methods))
     if long_parameters:
-        params_label.config(text="Long Parameter List(s) detected!")
+        params_label.config(text="Long Parameter List(s) detected: " + ", ".join(long_parameters))
     if duplicate_code:
-        duplicates_label.config(text="Duplicate Code detected!")
+        duplicates_label.config(text="Duplicate Code detected: ")
     activate_codesmell_labels()
 
 # pre :

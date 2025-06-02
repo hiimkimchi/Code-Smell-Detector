@@ -1,27 +1,30 @@
 import re
 
 MAX_LOC = 15
+MAX_PARAMS = 3
 JACCARD_THRESHOLD = 0.75
 
 # pre : - index < len(contents)
 # post: - returns True if line is start of a method, False if line is not a start of a method
 def is_method (contents, index):
-    return contents[index].startswith("def ") and contents[index].startswith("if __name__ == \"__main__\"") and index >= len(contents)
+    line = contents[index].lstrip()
+    return line.startswith("def ")
 
 # pre : - line is a method definition header (e.g. def ...)
 # post: - returns the method name within the line
 def get_method_name(line):
+    line = line.lstrip()
     if line.startswith("if __name__ == \"__main__\""):
         return "MAIN"
-    method_name_pattern = re.compile(r'^\s*def\s+([A-Za-z_]\w*)\s*\(')
-    return method_name_pattern.match(line)
+    method_name_pattern = re.match(r'^\s*def\s+([A-Za-z_]\w*)\s*\(', line)
+    return method_name_pattern.group(1) if method_name_pattern else None
 
 # pre : - start_index < index
 #       - line is a function definition start and is non empty 
 # post: - returns name of function (or returns none)
-def check_LOC (line, start_index, index):
+def check_LOC (line, start_index, index, blank_line_count):
     function_name = get_method_name(line)
-    LOC = index - start_index
+    LOC = index - start_index - blank_line_count
     if LOC > MAX_LOC:
         return function_name
     return None
@@ -29,34 +32,52 @@ def check_LOC (line, start_index, index):
 # pre : - line is a function definition start and is non empty 
 # post: - returns name of function (or returns none)
 def check_parameters (line):
-    function_name = get_method_name(line)
-    param_pattern = (r'?:\s*)(\[[^\]]*\]|\([^\)]*\)|[^,\[\]\(\)]+)(?=\s*,|\s*$)', re.VERBOSE)
-    params = [p.strip() for p in param_pattern.findall(line)]
-    if len(params) >= 3:
-        return function_name
+    name = get_method_name(line)
+    param_pattern = re.compile(r'(?:\s*)(\[[^\]]*\]|\([^\)]*\)|[^,\[\]\(\)]+)(?=\s*,|\s*$)', re.VERBOSE)
+    param_str = line[line.find("(")+1 : line.rfind(")")]
+    params = [p.strip() for p in param_pattern.findall(param_str)]
+    if len(params) > MAX_PARAMS:
+        return name
     return None
 
 # pre : - start_index < index
 #       - line is a function definition start and is non empty 
 # post: - returns result of check_LOC and result of check_parameters
-def check_LOC_and_params (contents, start_index, index):
-    return check_LOC(contents[start_index], start_index, index), check_parameters(contents[index])
+def check_LOC_and_params (contents, start_index, index, blank_line_count):
+    last_index = index
+    if index == len(contents):
+        last_index = start_index
+    return check_LOC(contents[start_index], start_index, index, blank_line_count), check_parameters(contents[last_index])
 
-# pre : - none
-# post: - returns list of methods that are too long and methods that have too many parameters
-def find_LOC_and_params (contents):
-    current_start_index, long_methods, long_parameters = None, [], []
+# pre : -finds index boundaries for each method as well as the amount of blank_lines within
+# post: - returns a list of tuples (start index, index, blank lines)
+def collect_boundaries (contents):
+    boundaries, current_start_index, blank_count = [], None, 0
     for index in range(len(contents)):
         if not is_method(contents, index):
+            if current_start_index is not None and contents[index] == '\n':
+                blank_count += 1
             continue
-        if not current_start_index:
-            current_start_index = index
-        long_method, long_param_list = check_LOC_and_params(contents, current_start_index, index)
+        if current_start_index is None:
+            current_start_index, blank_count = index, 0
+        else:
+            boundaries.append((current_start_index, index, blank_count))
+            current_start_index, blank_count = index, 0
+    if current_start_index is not None:
+        boundaries.append((current_start_index, len(contents), blank_count))
+    return boundaries
+
+# pre : - collect_boundaries collects index boundaries and blank_lines within correctly
+# post: - returns list of methods that are too long and methods that have too many parameters
+def find_LOC_and_params (contents):
+    long_methods, long_parameters = [], []
+    boundaries = collect_boundaries(contents)
+    for start_index, index, blank_count in boundaries:
+        long_method, long_parameter = check_LOC_and_params(contents, start_index, index, blank_count)
         if long_method:
             long_methods.append(long_method)
-        if long_param_list:
-            long_parameters.append(long_param_list)
-        current_start_index = index
+        if long_parameter:
+            long_parameters.append(long_parameter)
     return long_methods, long_parameters
 
 # pre : - method_name is properly retrieved by get_method_name
