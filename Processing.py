@@ -1,6 +1,7 @@
 import re
 
 MAX_LOC = 15
+JACCARD_THRESHOLD = 0.75
 
 # pre : - index < len(contents)
 # post: - returns True if line is start of a method, False if line is not a start of a method
@@ -85,7 +86,7 @@ def get_calls (method_name, contents):
 # pre : - len of method1 and 2 are not 0
 # post: - returns a pair formatted as such {(method1, method2) : {method1 : amount of calls, method2 : amount of calls}}
 def check_duplicated (method1, method2, contents):
-    if jaccard_sim(method1, method2) < 0.75:
+    if jaccard_sim(method1, method2) < JACCARD_THRESHOLD:
         return None
     method1_name, method2_name = get_method_name(method1[0]), get_method_name(method2[0])
     method1_count, method2_count = get_calls(method1_name, contents), get_calls(method2_name, contents)
