@@ -16,7 +16,6 @@ def collect_methods (contents):
                 current_method.append(contents[index])
     if current_method:
         all_methods.append(current_method)
-    print(all_methods)
     return all_methods
 
 # pre : - none

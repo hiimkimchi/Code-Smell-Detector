@@ -16,11 +16,11 @@ frame = ttk.Frame(root, padding=10)
 frame.grid()
 
 title_label = ttk.Label(frame, text="Code Smell Detector")
-status_label = ttk.Label(frame, text="No file loaded", relief="sunken")
+status_label = ttk.Label(frame, text="No file loaded", relief="sunken", justify="center")
 LOC_label = ttk.Label(frame, text="Long Method/Function not detected.", relief="raised")
 params_label = ttk.Label(frame, text="Long Parameter List not detected.", relief="raised")
 duplicates_label = ttk.Label(frame, text="Duplicate Code not detected.", relief="raised")
-refactor_label = ttk.Label(frame, text="Duplicate Code successfully refactored.\nNOTE: code may not be semantically correct. Please double check results.", relief="raised")
+refactor_label = ttk.Label(frame, text="Duplicate Code successfully refactored.\nNOTE: code may not be semantically correct. Please double check results.", relief="raised", justify="center")
 load_btn = ttk.Button(frame, text="Load .py File", command=lambda: load_file())
 quit_btn = ttk.Button(frame, text="Quit", command=root.destroy)
 codesmell_btn = ttk.Button(frame, text="Find Code Smells", command=lambda: find_codesmells())
@@ -41,7 +41,7 @@ def load_file():
         return
     loaded_path = path
     status_label.config(text=f"Loaded: {path}")
-    codesmell_btn.grid(column=1, row=3, padx=(5, 0), pady=(5, 0), sticky="e")
+    codesmell_btn.grid(column=0, row=3, columnspan=2, pady=(5, 0))
 
 # pre : - LOC_label, params_label, duplicates_label, and refactor_btn are declared before function definition
 # post: - Code smells are displayed to client
@@ -56,15 +56,15 @@ def find_codesmells():
     if duplicate_code:
         pairs = [f"{m1} & {m2}" for (m1, m2) in duplicate_code.keys()]
         duplicates_label.config(text="Duplicate Code detected: " + "; ". join(pairs))
-        refactor_btn.grid(column=1, row=7)
+        refactor_btn.grid(column=0, row=7, columnspan=2)
     activate_codesmell_labels()
 
 # pre : - LOC_label, params_label, and duplicates_label are declared before function definition
 # post: - Labels are shown to client
 def activate_codesmell_labels():
-    LOC_label.grid(column=0, row=4)
-    params_label.grid(column=0, row=5)
-    duplicates_label.grid(column=0, row=6)
+    LOC_label.grid(column=0, row=4, columnspan=2)
+    params_label.grid(column=0, row=5, columnspan=2)
+    duplicates_label.grid(column=0, row=6, columnspan=2)
 
 # pre : - LOC_label, params_label, and duplicates_label are declared before function definition
 # post: - Labels are hidden from client and are reset to default values
@@ -83,10 +83,10 @@ def refactor_duplicate_code():
     try:
         new_contents = refactor_duplicates(duplicate_code, original_contents)
         produce_refactored(loaded_path, new_contents)
-        refactor_label.grid(column=0, row=8)
+        refactor_label.grid(column=0, row=8, columnspan=2, pady=(5, 0))
     except:
         refactor_label.config(text="Error: Code was unable to be refactored. Try again please.")
-        refactor_label.grid(column=0, row=8)
+        refactor_label.grid(column=0, row=8, columnspan=2, pady=(5, 0))
 
 title_label.grid(column=0, row=0, columnspan=2, pady=(0,10))
 load_btn.grid(column=0, row=1, sticky="w", padx=(0,5))
