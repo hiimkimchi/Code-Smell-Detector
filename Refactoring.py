@@ -88,10 +88,9 @@ def rewrite_contents(replace_map, contents, loser_map):
         stripped = line.lstrip()
         indent = len(line) - len(stripped)
         if skipping:
-            if stripped and indent > skip_indent: continue
+            if indent > skip_indent: continue
             skipping = False
-        should_skip = detect_loser_def(stripped, replace_map)
-        if should_skip:
+        if detect_loser_def(stripped, replace_map):
                 skipping, skip_indent = True, indent
                 continue
         new_contents.append(rewrite_line(replace_map, line, loser_map))
