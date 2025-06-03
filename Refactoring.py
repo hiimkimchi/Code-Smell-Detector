@@ -10,12 +10,13 @@ def collect_methods (contents):
         if is_method(contents, index):
             if current_method:
                 all_methods.append(current_method)
-                current_method = [contents[index]]
-            else:
-                if current_method:
-                    current_method.append(contents[index])
+            current_method = [contents[index]]
+        else:
+            if current_method:
+                current_method.append(contents[index])
     if current_method:
         all_methods.append(current_method)
+    print(all_methods)
     return all_methods
 
 # pre : - none
@@ -91,7 +92,7 @@ def rewrite_contents(replace_map, contents, loser_map):
             skipping = False
         should_skip = detect_loser_def(stripped, replace_map)
         if should_skip:
-                skipping = True
+                skipping, skip_indent = True, indent
                 continue
         new_contents.append(rewrite_line(replace_map, line, loser_map))
     return new_contents

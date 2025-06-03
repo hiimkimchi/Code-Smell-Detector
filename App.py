@@ -27,24 +27,26 @@ refactor_btn = ttk.Button(frame, text="Refactor Duplicate Code")
 # post:
 def load_file(status_label):
     global loaded_path, original_contents
+    reset_smell_results()
     path = filedialog.askopenfilename(title="Select a Python file to refactor", filetypes=[("Python Files", "*.py")])
     if not path:
         return
     try:
         original_contents = get_file(path)
-        print(original_contents)
+        print(original_contents) #TODO: debugging
     except Exception as e:
         messagebox.showerror("Error", f"Could not read file:\n{e}")
         return
     loaded_path = path
     status_label.config(text=f"Loaded: {path}")
-    codesmell_btn.grid(column=1, row=2, padx=(5, 0), pady=(5, 0), sticky="e")
+    codesmell_btn.grid(column=1, row=3, padx=(5, 0), pady=(5, 0), sticky="e")
 
 # pre :
 # post:
 def find_codesmells(LOC_label, params_label, duplicates_label):
     global original_contents
     long_methods, long_parameters = find_LOC_and_params(original_contents)
+    #TODO: debugging
     print(long_methods)
     print(long_parameters)
     duplicate_code = find_duplicates(original_contents)
@@ -59,11 +61,21 @@ def find_codesmells(LOC_label, params_label, duplicates_label):
 # pre :
 # post:
 def activate_codesmell_labels():
-    LOC_label.grid(column=0, row=3)
-    params_label.grid(column=0, row=4)
-    duplicates_label.grid(column=0, row=5)
+    LOC_label.grid(column=0, row=4)
+    params_label.grid(column=0, row=5)
+    duplicates_label.grid(column=0, row=6)
 
-#TODO:
+# pre :
+# post:
+def reset_smell_results():
+    LOC_label.config(text="Long Method/Function not detected.")
+    params_label.config(text="Long Parameter List not detected.")
+    duplicates_label.config(text="Duplicate Code not detected.")
+    LOC_label.grid_forget()
+    params_label.grid_forget()
+    duplicates_label.grid_forget()
+
+#TODO: make these features
 def refactor_duplicate_code():
     print()
 

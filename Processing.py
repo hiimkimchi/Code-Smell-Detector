@@ -89,10 +89,12 @@ def name_in_line (method_name, line):
 # pre : - len of method1 and 2 are not 0
 # post: - returns a jaccard similarity score (float theoretically in between 0.0 and 1.0)
 def jaccard_sim (method1, method2):
-    lineset1 = {ln.strip() for ln in method1 if ln.strip()}
-    lineset2 = {ln.strip() for ln in method2 if ln.strip()}
-    intersection = lineset1 & lineset2
-    union = lineset1 | lineset2
+    text1 = "".join(method1)
+    text2 = "".join(method2)
+    set1 = set(text1)
+    set2 = set(text2)
+    intersection = set1 & set2
+    union = set1 | set2
     return len(intersection) / len(union) if union else 1.0
 
 # pre : - method_name is properly retrieved by get_method_name
@@ -107,6 +109,7 @@ def get_calls (method_name, contents):
 # pre : - len of method1 and 2 are not 0
 # post: - returns a pair formatted as such {(method1, method2) : {method1 : amount of calls, method2 : amount of calls}}
 def check_duplicated (method1, method2, contents):
+    print(jaccard_sim(method1, method2)) #TODO: debugging
     if jaccard_sim(method1, method2) < JACCARD_THRESHOLD:
         return None
     method1_name, method2_name = get_method_name(method1[0]), get_method_name(method2[0])
