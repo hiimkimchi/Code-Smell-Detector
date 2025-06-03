@@ -109,7 +109,6 @@ def get_calls (method_name, contents):
 # pre : - len of method1 and 2 are not 0
 # post: - returns a pair formatted as such {(method1, method2) : {method1 : amount of calls, method2 : amount of calls}}
 def check_duplicated (method1, method2, contents):
-    print(jaccard_sim(method1, method2)) #TODO: debugging
     if jaccard_sim(method1, method2) < JACCARD_THRESHOLD:
         return None
     method1_name, method2_name = get_method_name(method1[0]), get_method_name(method2[0])
