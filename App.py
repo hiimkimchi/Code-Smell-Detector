@@ -20,7 +20,7 @@ status_label = ttk.Label(frame, text="No file loaded", relief="sunken", justify=
 LOC_label = ttk.Label(frame, text="Long Method/Function not detected.", relief="raised")
 params_label = ttk.Label(frame, text="Long Parameter List not detected.", relief="raised")
 duplicates_label = ttk.Label(frame, text="Duplicate Code not detected.", relief="raised")
-refactor_label = ttk.Label(frame, text="Duplicate Code successfully refactored.\nNOTE: code may not be semantically correct. Please double check results.", relief="raised", justify="center")
+refactor_label = ttk.Label(frame, text=f"Duplicate Code successfully refactored in same directory as original.\nNOTE: code may not be semantically correct. Please double check results.", relief="raised", justify="center")
 load_btn = ttk.Button(frame, text="Load .py File", command=lambda: load_file())
 quit_btn = ttk.Button(frame, text="Quit", command=root.destroy)
 codesmell_btn = ttk.Button(frame, text="Find Code Smells", command=lambda: find_codesmells())
