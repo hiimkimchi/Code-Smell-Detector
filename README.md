@@ -2,7 +2,8 @@
 Detects if a .py file has methods/parameters that are too verbose or any duplicated code
 
 ## Usage
-bash```
+bash
+```
 python3 App.py
 ```
 
