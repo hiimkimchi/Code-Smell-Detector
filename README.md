@@ -1,4 +1,4 @@
-# Code-Smell-Detector
+# Code Smell Detector
 Detects if a .py file has methods/parameter lists that are too verbose or any duplicated code.
 
 ### Metrics:
