@@ -75,6 +75,7 @@ def reset_smell_results():
     LOC_label.grid_forget()
     params_label.grid_forget()
     duplicates_label.grid_forget()
+    refactor_btn.grid_forget()
 
 # pre : - refactor_label is declared before function definition
 # post: - Code is refactored and placed in same directory as the input file
