@@ -12,7 +12,7 @@ Detects if a .py file has methods/parameter lists that are too verbose or any du
 python3 App.py
 ```
 
-## Example
+## Demo
 ```python
 # test.py
 def func1(e,f,g):
